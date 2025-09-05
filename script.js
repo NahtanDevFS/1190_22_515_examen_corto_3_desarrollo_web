@@ -1,86 +1,86 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const gameBoard = document.querySelector("#game-board");
-  const startButton = document.querySelector("#start-button");
-  const width = 10; // Ancho del tablero en celdas
-  const height = 20; // Alto del tablero
-  let cells = [];
-  let currentPosition = 4;
-  let currentRotation = 0;
+  const tableroJuego = document.querySelector("#juego-board");
+  const inicioButton = document.querySelector("#inicio-button");
+  const ancho = 10; // Ancho del tablero en celdas
+  const alto = 20; // Alto del tablero
+  let celdas = [];
+  let posicionActual = 4;
+  let rotacionActual = 0;
   let timerId = null;
   let random = 0;
-  let currentTetromino = null;
+  let tetrominoActual = null;
 
   // Crear el tablero de juego (los divs de las celdas)
-  function createBoard() {
+  function crearTablero() {
     // Crear el tablero visible (200 celdas)
-    for (let i = 0; i < width * height; i++) {
-      const cell = document.createElement("div");
-      gameBoard.appendChild(cell);
+    for (let i = 0; i < ancho * alto; i++) {
+      const celda = document.createElement("div");
+      tableroJuego.appendChild(celda);
     }
 
     // Crear la fila invisible en el fondo para la detección de colisiones
-    for (let i = 0; i < width; i++) {
-      const cell = document.createElement("div");
-      cell.classList.add("taken");
-      cell.style.display = "none";
-      gameBoard.appendChild(cell);
+    for (let i = 0; i < ancho; i++) {
+      const celda = document.createElement("div");
+      celda.classList.add("taken");
+      celda.style.display = "none";
+      tableroJuego.appendChild(celda);
     }
 
     // Actualizar la lista de celdas usando un selector más robusto
-    cells = Array.from(document.querySelectorAll("#game-board div"));
+    celdas = Array.from(document.querySelectorAll("#juego-board div"));
   }
 
   // Definición de las piezas (Tetrominós) y sus rotaciones
   const lTetromino = [
-    [1, width + 1, width * 2 + 1, 2],
-    [width, width + 1, width + 2, width * 2 + 2],
-    [1, width + 1, width * 2 + 1, width * 2],
-    [width, width * 2, width * 2 + 1, width * 2 + 2],
+    [1, ancho + 1, ancho * 2 + 1, 2],
+    [ancho, ancho + 1, ancho + 2, ancho * 2 + 2],
+    [1, ancho + 1, ancho * 2 + 1, ancho * 2],
+    [ancho, ancho * 2, ancho * 2 + 1, ancho * 2 + 2],
   ];
 
   const zTetromino = [
-    [0, width, width + 1, width * 2 + 1],
-    [width + 1, width + 2, width * 2, width * 2 + 1],
-    [0, width, width + 1, width * 2 + 1],
-    [width + 1, width + 2, width * 2, width * 2 + 1],
+    [0, ancho, ancho + 1, ancho * 2 + 1],
+    [ancho + 1, ancho + 2, ancho * 2, ancho * 2 + 1],
+    [0, ancho, ancho + 1, ancho * 2 + 1],
+    [ancho + 1, ancho + 2, ancho * 2, ancho * 2 + 1],
   ];
 
   const tTetromino = [
-    [1, width, width + 1, width + 2],
-    [1, width + 1, width + 2, width * 2 + 1],
-    [width, width + 1, width + 2, width * 2 + 1],
-    [1, width, width + 1, width * 2 + 1],
+    [1, ancho, ancho + 1, ancho + 2],
+    [1, ancho + 1, ancho + 2, ancho * 2 + 1],
+    [ancho, ancho + 1, ancho + 2, ancho * 2 + 1],
+    [1, ancho, ancho + 1, ancho * 2 + 1],
   ];
 
   const oTetromino = [
-    [0, 1, width, width + 1],
-    [0, 1, width, width + 1],
-    [0, 1, width, width + 1],
-    [0, 1, width, width + 1],
+    [0, 1, ancho, ancho + 1],
+    [0, 1, ancho, ancho + 1],
+    [0, 1, ancho, ancho + 1],
+    [0, 1, ancho, ancho + 1],
   ];
 
   const iTetromino = [
-    [1, width + 1, width * 2 + 1, width * 3 + 1],
-    [width, width + 1, width + 2, width + 3],
-    [1, width + 1, width * 2 + 1, width * 3 + 1],
-    [width, width + 1, width + 2, width + 3],
+    [1, ancho + 1, ancho * 2 + 1, ancho * 3 + 1],
+    [ancho, ancho + 1, ancho + 2, ancho + 3],
+    [1, ancho + 1, ancho * 2 + 1, ancho * 3 + 1],
+    [ancho, ancho + 1, ancho + 2, ancho + 3],
   ];
 
   const jTetromino = [
-    [1, width + 1, width * 2 + 1, width * 2],
-    [width, width + 1, width + 2, 2],
-    [1, width + 1, width * 2 + 1, 2],
-    [width, width * 2, width * 2 + 1, width * 2 + 2],
+    [1, ancho + 1, ancho * 2 + 1, ancho * 2],
+    [ancho, ancho + 1, ancho + 2, 2],
+    [1, ancho + 1, ancho * 2 + 1, 2],
+    [ancho, ancho * 2, ancho * 2 + 1, ancho * 2 + 2],
   ];
 
   const sTetromino = [
-    [width, width + 1, 1, 2],
-    [0, width, width + 1, width * 2 + 1],
-    [width, width + 1, 1, 2],
-    [0, width, width + 1, width * 2 + 1],
+    [ancho, ancho + 1, 1, 2],
+    [0, ancho, ancho + 1, ancho * 2 + 1],
+    [ancho, ancho + 1, 1, 2],
+    [0, ancho, ancho + 1, ancho * 2 + 1],
   ];
 
-  const theTetrominoes = [
+  const Tetrominos = [
     lTetromino,
     zTetromino,
     tTetromino,
@@ -89,27 +89,27 @@ document.addEventListener("DOMContentLoaded", () => {
     jTetromino,
     sTetromino,
   ];
-  const colors = ["L", "Z", "T", "O", "I", "J", "S"];
+  const colores = ["L", "Z", "T", "O", "I", "J", "S"];
 
   // Función para generar una nueva pieza aleatoria
-  function newPiece() {
-    random = Math.floor(Math.random() * theTetrominoes.length);
-    currentTetromino = theTetrominoes[random][currentRotation];
-    currentPosition = 4;
+  function nuevaPieza() {
+    random = Math.floor(Math.random() * Tetrominos.length);
+    tetrominoActual = Tetrominos[random][rotacionActual];
+    posicionActual = 4;
     draw();
   }
 
   // Dibujar la pieza en el tablero
   function draw() {
-    currentTetromino.forEach((index) => {
-      cells[currentPosition + index].classList.add(colors[random]);
+    tetrominoActual.forEach((index) => {
+      celdas[posicionActual + index].classList.add(colores[random]);
     });
   }
 
   // Borrar la pieza del tablero
   function undraw() {
-    currentTetromino.forEach((index) => {
-      cells[currentPosition + index].classList.remove(colors[random]);
+    tetrominoActual.forEach((index) => {
+      celdas[posicionActual + index].classList.remove(colores[random]);
     });
   }
 
@@ -117,28 +117,28 @@ document.addEventListener("DOMContentLoaded", () => {
   function moveDown() {
     // Primero, verificamos si el siguiente movimiento hacia abajo resultará en una colisión.
     if (
-      currentTetromino.some((index) =>
-        cells[currentPosition + index + width].classList.contains("taken")
+      tetrominoActual.some((index) =>
+        celdas[posicionActual + index + ancho].classList.contains("taken")
       )
     ) {
       // Si hay colisión, la pieza ha aterrizado, la "fijamos" en su lugar.
-      currentTetromino.forEach((index) =>
-        cells[currentPosition + index].classList.add("taken")
+      tetrominoActual.forEach((index) =>
+        celdas[posicionActual + index].classList.add("taken")
       );
 
       // Ahora creamos una nueva pieza en la parte superior.
-      currentRotation = 0;
-      random = Math.floor(Math.random() * theTetrominoes.length);
-      currentTetromino = theTetrominoes[random][currentRotation];
-      currentPosition = 4;
+      rotacionActual = 0;
+      random = Math.floor(Math.random() * Tetrominos.length);
+      tetrominoActual = Tetrominos[random][rotacionActual];
+      posicionActual = 4;
 
       // Verificamos si el juego terminó (la nueva pieza choca con algo existente)
       if (
-        currentTetromino.some((index) =>
-          cells[currentPosition + index].classList.contains("taken")
+        tetrominoActual.some((index) =>
+          celdas[posicionActual + index].classList.contains("taken")
         )
       ) {
-        alert("Game Over");
+        alert("Juego terminado");
         clearInterval(timerId);
         timerId = null;
       } else {
@@ -146,11 +146,11 @@ document.addEventListener("DOMContentLoaded", () => {
         draw();
       }
 
-      checkRows(); // Verificamos si se completó alguna línea
+      checkFilas(); // Verificamos si se completó alguna línea
     } else {
       // Si no hay colisión, simplemente movemos la pieza hacia abajo
       undraw();
-      currentPosition += width;
+      posicionActual += ancho;
       draw();
     }
   }
@@ -158,16 +158,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mover la pieza a la izquierda, con límites
   function moveLeft() {
     undraw();
-    const isAtLeftEdge = currentTetromino.some(
-      (index) => (currentPosition + index) % width === 0
+    const isAtLeftEdge = tetrominoActual.some(
+      (index) => (posicionActual + index) % ancho === 0
     );
-    if (!isAtLeftEdge) currentPosition -= 1;
+    if (!isAtLeftEdge) posicionActual -= 1;
     if (
-      currentTetromino.some((index) =>
-        cells[currentPosition + index].classList.contains("taken")
+      tetrominoActual.some((index) =>
+        celdas[posicionActual + index].classList.contains("taken")
       )
     ) {
-      currentPosition += 1;
+      posicionActual += 1;
     }
     draw();
   }
@@ -175,16 +175,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mover la pieza a la derecha, con límites
   function moveRight() {
     undraw();
-    const isAtRightEdge = currentTetromino.some(
-      (index) => (currentPosition + index) % width === width - 1
+    const isAtRightEdge = tetrominoActual.some(
+      (index) => (posicionActual + index) % ancho === ancho - 1
     );
-    if (!isAtRightEdge) currentPosition += 1;
+    if (!isAtRightEdge) posicionActual += 1;
     if (
-      currentTetromino.some((index) =>
-        cells[currentPosition + index].classList.contains("taken")
+      tetrominoActual.some((index) =>
+        celdas[posicionActual + index].classList.contains("taken")
       )
     ) {
-      currentPosition -= 1;
+      posicionActual -= 1;
     }
     draw();
   }
@@ -192,30 +192,28 @@ document.addEventListener("DOMContentLoaded", () => {
   // Rotar la pieza
   function rotate() {
     undraw();
-    currentRotation++;
-    if (currentRotation === currentTetromino.length) {
+    rotacionActual++;
+    if (rotacionActual === tetrominoActual.length) {
       // si la rotación llega a 4, volver a 0
-      currentRotation = 0;
+      rotacionActual = 0;
     }
-    currentTetromino = theTetrominoes[random][currentRotation];
+    tetrominoActual = Tetrominos[random][rotacionActual];
     // Evitar que rote fuera del tablero
     if (
-      currentTetromino.some(
-        (index) => (currentPosition + index) % width === 0
-      ) &&
-      currentTetromino.some(
-        (index) => (currentPosition + index) % width === width - 1
+      tetrominoActual.some((index) => (posicionActual + index) % ancho === 0) &&
+      tetrominoActual.some(
+        (index) => (posicionActual + index) % ancho === ancho - 1
       )
     ) {
-      currentRotation = currentRotation > 0 ? currentRotation - 1 : 3;
-      currentTetromino = theTetrominoes[random][currentRotation];
+      rotacionActual = rotacionActual > 0 ? rotacionActual - 1 : 3;
+      tetrominoActual = Tetrominos[random][rotacionActual];
     }
     draw();
   }
 
   // Revisar si hay filas completas para eliminarlas
-  function checkRows() {
-    for (let i = 0; i < height * width; i += width) {
+  function checkFilas() {
+    for (let i = 0; i < alto * ancho; i += ancho) {
       const row = [
         i,
         i + 1,
@@ -228,14 +226,14 @@ document.addEventListener("DOMContentLoaded", () => {
         i + 8,
         i + 9,
       ];
-      if (row.every((index) => cells[index].classList.contains("taken"))) {
+      if (row.every((index) => celdas[index].classList.contains("taken"))) {
         row.forEach((index) => {
-          cells[index].classList.remove("taken");
-          cells[index].className = "cell"; // Limpiar todas las clases de color
+          celdas[index].classList.remove("taken");
+          celdas[index].className = "celda"; // Limpiar todas las clases de color
         });
-        const cellsRemoved = cells.splice(i, width);
-        cells = cellsRemoved.concat(cells);
-        cells.forEach((cell) => gameBoard.appendChild(cell));
+        const celdasRemoved = celdas.splice(i, ancho);
+        celdas = celdasRemoved.concat(celdas);
+        celdas.forEach((celda) => tableroJuego.appendChild(celda));
       }
     }
   }
@@ -255,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("keydown", control);
 
   // Iniciar y pausar el juego
-  startButton.addEventListener("click", () => {
+  inicioButton.addEventListener("click", () => {
     if (timerId) {
       clearInterval(timerId);
       timerId = null;
@@ -266,6 +264,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Inicializar el juego
-  createBoard();
-  newPiece();
+  crearTablero();
+  nuevaPieza();
 });
